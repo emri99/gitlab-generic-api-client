@@ -203,7 +203,14 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
         ));
         $this->assertEquals('value', $client->getOption('new_option'));
         $this->assertEquals(666, $client->getOption('timeout'));
-        $this->expectException('InvalidArgumentException');
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testInvalidOptions()
+    {
+        $client = new SUT(self::BASE_PATH);
         $client->getOption('missing-option');
     }
 
