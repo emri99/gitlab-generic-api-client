@@ -1,6 +1,6 @@
 # Gitlab-api-generic-client
 
-[![PHP: v5.3](https://img.shields.io/badge/PHP-v5.3-blue.svg?style=flat-square)](http://php.net)
+[![PHP: 5.4](https://img.shields.io/badge/PHP-5.4-blue.svg?style=flat-square)](http://php.net)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 This library has been built keeping in mind that Gitlab move so fast, that 
