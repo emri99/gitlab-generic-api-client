@@ -199,11 +199,11 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
     {
         $client = new SUT(self::BASE_PATH, array(
             'new_option' => 'value',
-            'timeout' => 666
+            'timeout' => 666,
         ));
         $this->assertEquals('value', $client->getOption('new_option'));
         $this->assertEquals(666, $client->getOption('timeout'));
-        $this->expectException("InvalidArgumentException");
+        $this->expectException('InvalidArgumentException');
         $client->getOption('missing-option');
     }
 
@@ -227,12 +227,12 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                             'HEADER1' => 'VALUE1',
                             'HEADER2' => 'VALUE2',
                             'HEADER3' => 'VALUE3',
-                            'HEADER4' => 'VALUE4'
+                            'HEADER4' => 'VALUE4',
                         ), $datas);
 
                         return true;
                     }),
-                    $this->anything()
+                    $this->anything(),
                 ),
                 // next call must have only global ones
                 array(
@@ -247,21 +247,20 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
 
                         return true;
                     }),
-                    $this->anything()
+                    $this->anything(),
                 )
             )
             ->willReturn(new Response(200, '', '', array()));
 
-
         $sut
             ->setHeaders(array(
                 'HEADER1' => 'VALUE1',
-                'HEADER2' => 'VALUE2'
+                'HEADER2' => 'VALUE2',
             ))
             ->path(2)
             ->get(array(), array(
                 'HEADER3' => 'VALUE3',
-                'HEADER4' => 'VALUE4'
+                'HEADER4' => 'VALUE4',
             ));
         $sut->path(2)->get();
 
@@ -292,19 +291,21 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
             ->authenticate('my-precious-token', SUT::AUTH_OAUTH_TOKEN, 'im sudoers')
             ->setHeaders(array(
                 'Authorization' => 'VALUE1',
-                'HEADER2' => 'VALUE2'
+                'HEADER2' => 'VALUE2',
             ))
             ->path(2)
             ->get(array(), array(
                 'HEADER3' => 'VALUE3',
-                'HEADER4' => 'VALUE4'
+                'HEADER4' => 'VALUE4',
             ));
     }
 
+    /**
+     * @expectedExceptionMessage scalar expected
+     * @expectedException \InvalidArgumentException
+     */
     public function testIncorrectPath()
     {
-        $this->expectExceptionMessage('scalar expected');
-        $this->expectException('InvalidArgumentException');
         $this->getMockedSUT()->path(array('array' => 'not accepted here'));
     }
 

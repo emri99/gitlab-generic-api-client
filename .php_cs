@@ -16,12 +16,6 @@ return PhpCsFixer\Config::create()
         // '@PHP56Migration' => true,       // to prepare PHP56 migration
         'array_syntax' => ['syntax' => 'long'],
         'combine_consecutive_unsets' => true,
-        'general_phpdoc_annotation_remove' => [
-            // one should use PHPUnit methods to set up expected exception instead of annotations
-            'expectedException',
-            'expectedExceptionMessage',
-            'expectedExceptionMessageRegExp'
-        ],
         'header_comment' => ['header' => $header],
         'heredoc_to_nowdoc' => true,
         'no_extra_consecutive_blank_lines' => [
