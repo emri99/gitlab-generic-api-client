@@ -1,5 +1,6 @@
 # Gitlab-api-generic-client
 
+[![Build Status](https://img.shields.io/travis/emri99/gitlab-generic-api-client/master.svg?style=flat-square)](https://travis-ci.org/emri99/gitlab-generic-api-client)
 [![PHP: 5.4](https://img.shields.io/badge/PHP-5.4-blue.svg?style=flat-square)](http://php.net)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
