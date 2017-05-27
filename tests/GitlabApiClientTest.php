@@ -212,16 +212,74 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
         $self = $this;
 
         $sut = $this->getMockedSUT();
+        $sut->expects($this->exactly(2))
+            ->method('performRequest')
+            ->withConsecutive(
+                // first call have all headers
+                // * globally defined ones
+                // * current request ones
+                array(
+                    'GET',
+                    $this->anything(),
+                    $this->anything(),
+                    $this->callback(function ($datas) use ($self) {
+                        $self->assertEquals(array(
+                            'HEADER1' => 'VALUE1',
+                            'HEADER2' => 'VALUE2',
+                            'HEADER3' => 'VALUE3',
+                            'HEADER4' => 'VALUE4'
+                        ), $datas);
+
+                        return true;
+                    }),
+                    $this->anything()
+                ),
+                // next call must have only global ones
+                array(
+                    'GET',
+                    $this->anything(),
+                    $this->anything(),
+                    $this->callback(function ($datas) use ($self) {
+                        $self->assertEquals(array(
+                            'HEADER1' => 'VALUE1',
+                            'HEADER2' => 'VALUE2',
+                        ), $datas);
+
+                        return true;
+                    }),
+                    $this->anything()
+                )
+            )
+            ->willReturn(new Response(200, '', '', array()));
+
+
+        $sut
+            ->setHeaders(array(
+                'HEADER1' => 'VALUE1',
+                'HEADER2' => 'VALUE2'
+            ))
+            ->path(2)
+            ->get(array(), array(
+                'HEADER3' => 'VALUE3',
+                'HEADER4' => 'VALUE4'
+            ));
+        $sut->path(2)->get();
+
+        // custom headers must not replace authentication header with same name
+        $sut = $this->getMockedSUT();
         $sut->expects($this->once())
             ->method('performRequest')
             ->with(
-                'DELETE',
-                self::BASE_PATH.'/path/2/to/delete',
+                'GET',
+                $this->anything(),
                 $this->anything(),
                 $this->callback(function ($datas) use ($self) {
                     $self->assertEquals(array(
-                        'Authorization' => 'Bearer my-precious',
-                        'SUDO' => 'special sudo string',
+                        'HEADER2' => 'VALUE2',
+                        'HEADER3' => 'VALUE3',
+                        'HEADER4' => 'VALUE4',
+                        'Authorization' => 'Bearer my-precious-token',
+                        'SUDO' => 'im sudoers',
                     ), $datas);
 
                     return true;
@@ -231,12 +289,16 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
             ->willReturn(new Response(200, '', '', array()));
 
         $sut
+            ->authenticate('my-precious-token', SUT::AUTH_OAUTH_TOKEN, 'im sudoers')
             ->setHeaders(array(
-                'HEADER1' => 'VALUE1',
+                'Authorization' => 'VALUE1',
                 'HEADER2' => 'VALUE2'
             ))
             ->path(2)
-            ->delete();
+            ->get(array(), array(
+                'HEADER3' => 'VALUE3',
+                'HEADER4' => 'VALUE4'
+            ));
     }
 
     public function testIncorrectPath()
