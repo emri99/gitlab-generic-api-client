@@ -1,0 +1,32 @@
+{
+    "name": "emri99/gitlab-generic-api-client",
+    "license": "MIT",
+    "type": "library",
+    "description": "PHP GitLab generic API client (not stick to any version)",
+    "homepage": "https://github.com/emri99/gitlab-generic-api-client",
+    "keywords": ["gitlab", "api"],
+    "authors": [
+        {
+            "name": "Cyril MERY",
+            "email": "mery.cyril@gmail.com"
+        }
+    ],
+    "require": {
+        "ext-php": ">5.3",
+        "mashape/unirest-php": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Emri99\\Gitlab\\": "src\\"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7",
+        "friendsofphp/php-cs-fixer": "^2.3"
+    },
+    "scripts": {
+        "format": [
+            "vendor/bin/php-cs-fixer fix --config=.php_cs --show-progress=estimating --verbose"
+        ]
+    }
+}
