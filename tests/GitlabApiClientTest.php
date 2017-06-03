@@ -40,7 +40,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                     $this->isType('array'),
                     $this->isType('array')
                 )
-            ->willReturn(new Response(200, '', '', array()));
+            ->willReturn(new Response(200, '{}', '', array()));
 
         $sut->path(1)->to('data one')->for('test')->get(array(
             'param2' => 'value2',
@@ -59,7 +59,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                 $this->isEmpty(),
                 $this->anything()
             )
-            ->willReturn(new Response(200, '', '', array()));
+            ->willReturn(new Response(200, '{}', '', array()));
 
         $sut
             ->authenticate('wont-be-passed', 'inexistent-mode')
@@ -88,7 +88,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                 }),
                 $this->anything()
             )
-            ->willReturn(new Response(200, '', '', array()));
+            ->willReturn(new Response(200, '{}', '', array()));
 
         $sut
             ->authenticate($token, SUT::AUTH_HTTP_TOKEN)
@@ -112,7 +112,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                 }),
                 $this->anything()
             )
-            ->willReturn(new Response(200, '', '', array()));
+            ->willReturn(new Response(200, '{}', '', array()));
 
         $sut
             ->authenticate($token, SUT::AUTH_HTTP_TOKEN, $sudo)
@@ -142,7 +142,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                 }),
                 $this->anything()
             )
-            ->willReturn(new Response(200, '', '', array()));
+            ->willReturn(new Response(200, '{}', '', array()));
 
         $sut
             ->authenticate($token, SUT::AUTH_OAUTH_TOKEN)
@@ -166,7 +166,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                 }),
                 $this->anything()
             )
-            ->willReturn(new Response(200, '', '', array()));
+            ->willReturn(new Response(200, '{}', '', array()));
 
         $sut
             ->authenticate($token, SUT::AUTH_OAUTH_TOKEN, $sudo)
@@ -175,6 +175,10 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
             ->delete();
     }
 
+    /**
+     * @expectedExceptionMessage (url : http://example.com/path)
+     * @expectedException \RunTimeException
+     */
     public function testDisplayUrlOn404()
     {
         $sut = $this->getMockedSUT();
@@ -188,11 +192,53 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                 $this->anything(),
                 $this->anything()
             )
-            ->willReturn(new Response(404, '', '', array()));
+            ->willReturn(new Response(404, '{}', '', array()));
 
-        $response = $sut->path()->get();
+        $sut->path()->get();
+    }
 
-        $this->assertContains('(url : http://example.com/path)', $response);
+    /**
+     * @expectedExceptionMessage No response
+     * @expectedException \RunTimeException
+     */
+    public function testNoResponse()
+    {
+        $sut = $this->getMockedSUT();
+        $sut
+            ->expects($this->once())
+            ->method('performRequest')
+            ->with(
+                'GET',
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->anything()
+            )
+            ->willReturn(null);
+
+        $sut->path()->get();
+    }
+
+    /**
+     * @expectedExceptionMessage Unable to decode response
+     * @expectedException \RunTimeException
+     */
+    public function testBadResponse()
+    {
+        $sut = $this->getMockedSUT();
+        $sut
+            ->expects($this->once())
+            ->method('performRequest')
+            ->with(
+                'GET',
+                $this->anything(),
+                $this->anything(),
+                $this->anything(),
+                $this->anything()
+            )
+            ->willReturn(new Response(200, null, '', array()));
+
+        $sut->path()->get();
     }
 
     public function testOptions()
@@ -257,7 +303,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                     $this->anything(),
                 )
             )
-            ->willReturn(new Response(200, '', '', array()));
+            ->willReturn(new Response(200, '{}', '', array()));
 
         $sut
             ->setHeaders(array(
@@ -292,7 +338,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                 }),
                 $this->anything()
             )
-            ->willReturn(new Response(200, '', '', array()));
+            ->willReturn(new Response(200, '{}', '', array()));
 
         $sut
             ->authenticate('my-precious-token', SUT::AUTH_OAUTH_TOKEN, 'im sudoers')

@@ -13,6 +13,7 @@ namespace Emri99\Gitlab;
 
 use Unirest\Method;
 use Unirest\Request;
+use Unirest\Response;
 
 class GitlabApiClient
 {
@@ -173,7 +174,7 @@ class GitlabApiClient
     {
         $response = $this->request(Method::GET, $this->flushPath(), $parameters, $headers);
 
-        return $response->body;
+        return $this->returnOrThrow($response);
     }
 
     /**
@@ -187,7 +188,7 @@ class GitlabApiClient
     {
         $response = $this->request(Method::POST, $this->flushPath(), $parameters, $headers, $files);
 
-        return $response->body;
+        return $this->returnOrThrow($response);
     }
 
     /**
@@ -200,7 +201,7 @@ class GitlabApiClient
     {
         $response = $this->request(Method::PATCH, $this->flushPath(), $parameters, $headers);
 
-        return $response->body;
+        return $this->returnOrThrow($response);
     }
 
     /**
@@ -213,7 +214,7 @@ class GitlabApiClient
     {
         $response = $this->request(Method::PUT, $this->flushPath(), $parameters, $headers);
 
-        return $response->body;
+        return $this->returnOrThrow($response);
     }
 
     /**
@@ -225,6 +226,37 @@ class GitlabApiClient
     public function delete(array $parameters = array(), $headers = array())
     {
         $response = $this->request('DELETE', $this->flushPath(), $parameters, $headers);
+
+        return $this->returnOrThrow($response);
+    }
+
+    /**
+     * @param Response $response
+     *
+     * @return array|\stdClass depending on option 'json_decode_to_array'
+     *
+     * @throws \RuntimeException
+     */
+    protected function returnOrThrow($response)
+    {
+        if (!$response) {
+            throw new \RuntimeException('No response');
+        }
+
+        if (null === $response->body) {
+            throw new \RuntimeException('Unable to decode response');
+        }
+
+        $exception = null;
+        if ($this->options['json_decode_to_array']) {
+            $exception = @$response->body['exception'];
+        } elseif (is_object($response->body)) {
+            $exception = @$response->body->exception;
+        }
+
+        if ($exception || $response->code >= 400) {
+            throw new \RuntimeException(sprintf('%s - %s', $response->code, @$response->body->message));
+        }
 
         return $response->body;
     }
@@ -252,7 +284,7 @@ class GitlabApiClient
             $httpOptions
         );
 
-        if ($response->code === 404) {
+        if (is_object($response) && $response->code === 404) {
             $message = @$response->body->message ?: '';
             $message .= sprintf(' (url : %s)', $path);
             if (is_array($response->body)) {
