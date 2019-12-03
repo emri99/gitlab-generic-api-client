@@ -172,7 +172,7 @@ class GitlabApiClient
      */
     public function get(array $parameters = array(), $headers = array())
     {
-        $response = $this->request(Method::GET, $this->flushPath(), $parameters, $headers);
+        $response = $this->request(Method::GET, $this->flushPath($parameters), $headers);
 
         return $this->returnOrThrow($response);
     }
@@ -186,7 +186,16 @@ class GitlabApiClient
      */
     public function post(array $parameters = array(), $headers = array(), array $files = array())
     {
-        $response = $this->request(Method::POST, $this->flushPath(), $parameters, $headers, $files);
+        $body = null;
+        if (!empty($parameters) && empty($files)) {
+            $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+            $body = Request\Body::Form($parameters);
+        } elseif (!empty($files)) {
+            $headers['Content-Type'] = 'multipart/form-data';
+            $body = Request\Body::Multipart($parameters, $files);
+        }
+
+        $response = $this->request(Method::POST, $this->flushPath(), $headers, $body);
 
         return $this->returnOrThrow($response);
     }
@@ -194,25 +203,22 @@ class GitlabApiClient
     /**
      * @param array $parameters
      * @param array $headers
+     * @param array $files
      *
      * @return mixed
      */
-    public function patch(array $parameters = array(), $headers = array())
+    public function put(array $parameters = array(), $headers = array(), array $files = array())
     {
-        $response = $this->request(Method::PATCH, $this->flushPath(), $parameters, $headers);
+        $body = null;
+        if (!empty($parameters) && empty($files)) {
+            $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+            $body = Request\Body::Form($parameters);
+        } elseif (!empty($files)) {
+            $headers['Content-Type'] = 'multipart/form-data';
+            $body = Request\Body::Multipart($parameters, $files);
+        }
 
-        return $this->returnOrThrow($response);
-    }
-
-    /**
-     * @param array $parameters
-     * @param array $headers
-     *
-     * @return mixed
-     */
-    public function put(array $parameters = array(), $headers = array())
-    {
-        $response = $this->request(Method::PUT, $this->flushPath(), $parameters, $headers);
+        $response = $this->request(Method::PUT, $this->flushPath(), $headers, $body);
 
         return $this->returnOrThrow($response);
     }
@@ -225,7 +231,7 @@ class GitlabApiClient
      */
     public function delete(array $parameters = array(), $headers = array())
     {
-        $response = $this->request('DELETE', $this->flushPath(), $parameters, $headers);
+        $response = $this->request('DELETE', $this->flushPath($parameters), $headers);
 
         return $this->returnOrThrow($response);
     }
@@ -233,9 +239,9 @@ class GitlabApiClient
     /**
      * @param Response $response
      *
-     * @return array|\stdClass depending on option 'json_decode_to_array'
-     *
      * @throws \RuntimeException
+     *
+     * @return array|\stdClass depending on option 'json_decode_to_array'
      */
     protected function returnOrThrow($response)
     {
@@ -243,60 +249,59 @@ class GitlabApiClient
             throw new \RuntimeException('No response');
         }
 
-        if (null === $response->body) {
-            throw new \RuntimeException('Unable to decode response');
+        if (null === $response->raw_body) {
+            return null;
         }
 
-        $exception = null;
-        if ($this->options['json_decode_to_array']) {
-            $exception = @$response->body['exception'];
-        } elseif (is_object($response->body)) {
-            $exception = @$response->body->exception;
+        if (is_string($response->body) && $response->headers["Content-Type"] === "application/json") {
+            throw new \RuntimeException('Unable to decode json response');
         }
 
-        if ($exception || $response->code >= 400) {
-            throw new \RuntimeException(sprintf('%s - %s', $response->code, @$response->body->message));
+        $error = !empty($response->body->error) ? $response->body->error : null;
+        if ($error && !is_string($error)) {
+            $error = trim(json_encode($error), '"');
         }
 
-        return $response->body;
+        if ($response->code >= 400) {
+            $error = $error ?: '';
+            if (404 === $response->code && $this->lastpath) {
+                $error .= $error.' (url : '.$this->lastpath.')';
+                $this->lastpath = null;
+            }
+        }
+
+        if ($error !== null) {
+            throw new \RuntimeException(sprintf('%s - %s', $response->code, $error), $response->code);
+        }
+
+        if (!$this->options['json_decode_to_array']) {
+            return $response->body;
+        }
+
+        return json_decode(json_encode($response->body), true);
     }
 
-    protected function request($httpMethod = 'GET', $path, array $parameters = array(), array $headers = array(), array $files = array())
+    protected function request($httpMethod = 'GET', $path, array $headers = array(), $body = null)
     {
         $httpMethod = strtoupper($httpMethod);
         $path = trim($this->baseUrl.$path, '/');
-        $body = empty($files) ? $parameters : Request\Body::Multipart($parameters, $files);
 
         $httpOptions = array(
             'verifyPeer' => array($this->options['verify_peer']),
             'verifyHost' => array($this->options['verify_host']),
             'timeout' => array($this->options['timeout']),
-            'jsonOpts' => array($this->options['json_decode_to_array'], 512, $this->options['json_decode_options']),
+            'jsonOpts' => array(false, 512, $this->options['json_decode_options']),
         );
 
         $allHeaders = array_merge($this->headers, $this->authenticationHeaders, $headers);
 
-        $response = $this->performRequest(
+        return $this->performRequest(
             $httpMethod,
             $path,
             $body,
             $allHeaders,
             $httpOptions
         );
-
-        if (is_object($response) && $response->code === 404) {
-            $message = @$response->body->message ?: '';
-            $message .= sprintf(' (url : %s)', $path);
-            if (is_array($response->body)) {
-                $response->body['message'] = $message;
-            } elseif (is_object($response->body)) {
-                $response->body->message = $message;
-            } else {
-                $response->body = json_encode(array('message' => $message), JSON_UNESCAPED_SLASHES);
-            }
-        }
-
-        return $response;
     }
 
     /**
@@ -307,6 +312,8 @@ class GitlabApiClient
      * @param string $body
      * @param array  $allHeaders
      * @param array  $httpOptions
+     *
+     * @throws \Unirest\Exception
      *
      * @return \Unirest\Response
      */
@@ -334,11 +341,21 @@ class GitlabApiClient
     /**
      * Retrieve current url fragment & flush it from next requests.
      *
+     * @param null|mixed $parameters
+     *
      * @return string
      */
-    protected function flushPath()
+    protected function flushPath($parameters = null)
     {
         $path = $this->path;
+
+        if ($parameters) {
+            $separator = false === strpos($path, '?') ? '?' : '&';
+            $path .= $separator.http_build_query($parameters);
+        }
+
+        // remember full url to display path in 404 message
+        $this->lastpath = $this->baseUrl.$path;
         $this->path = '';
 
         return $path;

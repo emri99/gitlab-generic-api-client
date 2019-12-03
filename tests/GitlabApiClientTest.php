@@ -35,8 +35,8 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
             ->method('performRequest')
                 ->with(
                     'GET',
-                    self::BASE_PATH.'/path/1/to/data%20one/for/test',
-                    array('param2' => 'value2'),
+                    self::BASE_PATH.'/path/1/to/data%20one/for/test?param2=value2',
+                    null,
                     $this->isType('array'),
                     $this->isType('array')
                 )
@@ -131,8 +131,8 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
         $sut->expects($this->once())
             ->method('performRequest')
             ->with(
-                'PATCH',
-                self::BASE_PATH.'/path/to/patch',
+                'PUT',
+                self::BASE_PATH.'/path/to/put',
                 $this->anything(),
                 $this->callback(function ($datas) use ($self) {
                     $self->assertEquals(array('Authorization' => 'Bearer my-precious',
@@ -146,8 +146,8 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
 
         $sut
             ->authenticate($token, SUT::AUTH_OAUTH_TOKEN)
-            ->path('to', 'patch')
-            ->patch();
+            ->path('to', 'put')
+            ->put();
 
         $sut = $this->getMockedSUT();
         $sut->expects($this->once())
@@ -220,7 +220,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedExceptionMessage Unable to decode response
+     * @expectedExceptionMessage Unable to decode json response
      * @expectedException \RunTimeException
      */
     public function testBadResponse()
@@ -236,7 +236,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
                 $this->anything(),
                 $this->anything()
             )
-            ->willReturn(new Response(200, null, '', array()));
+            ->willReturn(new Response(200, '{malformed json}', 'Content-Type: application/json', array()));
 
         $sut->path()->get();
     }
