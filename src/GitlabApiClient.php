@@ -95,6 +95,10 @@ class GitlabApiClient
         }
 
         foreach ($args as $param) {
+            if (null === $param) {
+                continue;
+            }
+
             if (!is_scalar($param)) {
                 throw new \InvalidArgumentException(sprintf('Method "%s" : Invalid argument type. scalar expected.', $method));
             }
