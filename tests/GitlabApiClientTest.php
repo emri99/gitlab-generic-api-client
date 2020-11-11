@@ -199,7 +199,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedExceptionMessage No response
-     * @expectedException \RunTimeException
+     * @expectedException \Emri99\Gitlab\Exception\GitlabApiClientException
      */
     public function testNoResponse()
     {
@@ -221,7 +221,7 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedExceptionMessage Unable to decode json response
-     * @expectedException \RunTimeException
+     * @expectedException \Emri99\Gitlab\Exception\GitlabApiClientException
      */
     public function testBadResponse()
     {
