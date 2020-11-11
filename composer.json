@@ -29,5 +29,10 @@
         "format": [
             "vendor/bin/php-cs-fixer fix --config=.php_cs --show-progress=estimating --verbose"
         ]
+    },
+    "extra": {
+      "branch-alias": {
+        "dev-master": "3.0.x-dev"
+      }
     }
 }
