@@ -176,8 +176,8 @@ class GitlabApiClientTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedExceptionMessage (url : http://example.com/path)
-     * @expectedException \RunTimeException
+     * @expectedExceptionMessage Page not found : http://example.com/path
+     * @expectedException Emri99\Gitlab\Exception\NotFoundException
      */
     public function testDisplayUrlOn404()
     {

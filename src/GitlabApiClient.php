@@ -11,6 +11,8 @@
 
 namespace Emri99\Gitlab;
 
+use Emri99\Gitlab\Exception\GitlabApiClientException;
+use Emri99\Gitlab\Exception\NotFoundException;
 use Unirest\Method;
 use Unirest\Request;
 use Unirest\Response;
@@ -172,6 +174,9 @@ class GitlabApiClient
      * @param array $parameters
      * @param array $headers
      *
+     * @throws GitlabApiClientException
+     * @throws NotFoundException
+     *
      * @return mixed
      */
     public function get(array $parameters = array(), $headers = array())
@@ -185,6 +190,9 @@ class GitlabApiClient
      * @param array $parameters
      * @param array $headers
      * @param array $files
+     *
+     * @throws GitlabApiClientException
+     * @throws NotFoundException
      *
      * @return mixed
      */
@@ -209,6 +217,9 @@ class GitlabApiClient
      * @param array $headers
      * @param array $files
      *
+     * @throws GitlabApiClientException
+     * @throws NotFoundException
+     *
      * @return mixed
      */
     public function put(array $parameters = array(), $headers = array(), array $files = array())
@@ -231,6 +242,9 @@ class GitlabApiClient
      * @param array $parameters
      * @param array $headers
      *
+     * @throws GitlabApiClientException
+     * @throws NotFoundException
+     *
      * @return mixed
      */
     public function delete(array $parameters = array(), $headers = array())
@@ -243,14 +257,15 @@ class GitlabApiClient
     /**
      * @param Response $response
      *
-     * @throws \RuntimeException
+     * @throws NotFoundException
+     * @throws GitlabApiClientException
      *
      * @return array|\stdClass depending on option 'json_decode_to_array'
      */
     protected function returnOrThrow($response)
     {
         if (!$response) {
-            throw new \RuntimeException('No response');
+            throw new GitlabApiClientException('No response');
         }
 
         if (null === $response->raw_body || '' === $response->raw_body) {
@@ -260,7 +275,7 @@ class GitlabApiClient
         if (is_string($response->body)
             && isset($response->headers["Content-Type"])
             && $response->headers["Content-Type"] === "application/json") {
-            throw new \RuntimeException('Unable to decode json response');
+            throw new GitlabApiClientException('Unable to decode json response');
         }
 
         $error = !empty($response->body->error) ? $response->body->error : null;
@@ -271,13 +286,14 @@ class GitlabApiClient
         if ($response->code >= 400) {
             $error = $error ?: '';
             if (404 === $response->code && $this->lastpath) {
-                $error .= $error.' (url : '.$this->lastpath.')';
+                $exception = NotFoundException::create($this->lastpath, $error);
                 $this->lastpath = null;
+                throw $exception;
             }
         }
 
         if ($error !== null) {
-            throw new \RuntimeException(sprintf('%s - %s', $response->code, $error), $response->code);
+            throw new GitlabApiClientException(sprintf('%s - %s', $response->code, $error), $response->code);
         }
 
         if (!$this->options['json_decode_to_array']) {
