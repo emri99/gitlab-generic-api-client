@@ -12,15 +12,14 @@
 namespace Emri99\Gitlab\Exception;
 
 /**
- * Class NotFoundException
+ * Class NotFoundException.
  *
- * @package Emri99\Gitlab
  * @author  Cyril MERY <cmery@coffreo.com>
  */
 class NotFoundException extends GitlabApiClientException
 {
-    static function create($url, $message = null)
+    public static function create($url, $message = null)
     {
-        return new self('Page not found : '.$url. (!empty($message) ? " / $message" : '') , 404);
+        return new self('Page not found : '.$url.(!empty($message) ? " / $message" : ''), 404);
     }
 }

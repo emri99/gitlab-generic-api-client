@@ -12,12 +12,10 @@
 namespace Emri99\Gitlab\Exception;
 
 /**
- * Class GitlabApiClientException
+ * Class GitlabApiClientException.
  *
- * @package Emri99\Gitlab
  * @author  Cyril MERY <cmery@coffreo.com>
  */
 class GitlabApiClientException extends \Exception
 {
-
 }

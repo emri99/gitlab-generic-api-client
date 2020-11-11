@@ -53,7 +53,7 @@ class GitlabApiClient
     protected $authenticationHeaders = array();
 
     /**
-     * @var null|array
+     * @var array|null
      */
     protected $auth = null;
 
@@ -84,7 +84,6 @@ class GitlabApiClient
      * Add url segment to endpoint url.
      *
      * @param string $method
-     * @param array  $args
      *
      * @return $this
      */
@@ -111,8 +110,6 @@ class GitlabApiClient
     }
 
     /**
-     * @param array $headers
-     *
      * @return $this
      */
     public function setHeaders(array $headers)
@@ -155,11 +152,11 @@ class GitlabApiClient
             return $this;
         }
 
-        if ($authMethod === self::AUTH_HTTP_TOKEN) {
+        if (self::AUTH_HTTP_TOKEN === $authMethod) {
             $this->authenticationHeaders['PRIVATE-TOKEN'] = $token;
         }
 
-        if ($authMethod === self::AUTH_OAUTH_TOKEN) {
+        if (self::AUTH_OAUTH_TOKEN === $authMethod) {
             $this->authenticationHeaders['Authorization'] = sprintf('Bearer %s', $token);
         }
 
@@ -171,7 +168,6 @@ class GitlabApiClient
     }
 
     /**
-     * @param array $parameters
      * @param array $headers
      *
      * @throws GitlabApiClientException
@@ -187,9 +183,7 @@ class GitlabApiClient
     }
 
     /**
-     * @param array $parameters
      * @param array $headers
-     * @param array $files
      *
      * @throws GitlabApiClientException
      * @throws NotFoundException
@@ -213,9 +207,7 @@ class GitlabApiClient
     }
 
     /**
-     * @param array $parameters
      * @param array $headers
-     * @param array $files
      *
      * @throws GitlabApiClientException
      * @throws NotFoundException
@@ -239,7 +231,6 @@ class GitlabApiClient
     }
 
     /**
-     * @param array $parameters
      * @param array $headers
      *
      * @throws GitlabApiClientException
@@ -273,8 +264,8 @@ class GitlabApiClient
         }
 
         if (is_string($response->body)
-            && isset($response->headers["Content-Type"])
-            && $response->headers["Content-Type"] === "application/json") {
+            && isset($response->headers['Content-Type'])
+            && 'application/json' === $response->headers['Content-Type']) {
             throw new GitlabApiClientException('Unable to decode json response');
         }
 
@@ -292,7 +283,7 @@ class GitlabApiClient
             }
         }
 
-        if ($error !== null) {
+        if (null !== $error) {
             throw new GitlabApiClientException(sprintf('%s - %s', $response->code, $error), $response->code);
         }
 
@@ -363,7 +354,7 @@ class GitlabApiClient
     /**
      * Retrieve current url fragment & flush it from next requests.
      *
-     * @param null|mixed $parameters
+     * @param mixed|null $parameters
      *
      * @return string
      */
