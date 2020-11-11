@@ -253,7 +253,7 @@ class GitlabApiClient
             throw new \RuntimeException('No response');
         }
 
-        if (null === $response->raw_body) {
+        if (null === $response->raw_body || '' === $response->raw_body) {
             return null;
         }
 
