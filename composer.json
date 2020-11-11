@@ -26,9 +26,8 @@
         "friendsofphp/php-cs-fixer": "2.*"
     },
     "scripts": {
-        "format": [
-            "vendor/bin/php-cs-fixer fix --config=.php_cs --show-progress=estimating --verbose"
-        ]
+        "cs": "vendor/bin/php-cs-fixer fix --config=.php_cs --show-progress=estimating --verbose",
+        "cs-dryrun": "vendor/bin/php-cs-fixer fix --config=.php_cs --show-progress=estimating --verbose --dry-run"
     },
     "extra": {
       "branch-alias": {
