@@ -257,7 +257,9 @@ class GitlabApiClient
             return null;
         }
 
-        if (is_string($response->body) && $response->headers["Content-Type"] === "application/json") {
+        if (is_string($response->body)
+            && isset($response->headers["Content-Type"])
+            && $response->headers["Content-Type"] === "application/json") {
             throw new \RuntimeException('Unable to decode json response');
         }
 
