@@ -151,7 +151,7 @@ foreach($branches as $branch) {
 Thanks for contributing !
 
 Please follow this rules:
-* you MUST apply supplied CS-fixer by running `composer run-script format`
+* you MUST apply supplied CS-fixer by running `composer run-script cs`
 * you MUST write/update the tests
 * you SHOULD write documentation
 * you MUST write minimum details in pull request description
