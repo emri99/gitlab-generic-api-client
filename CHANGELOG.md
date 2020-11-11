@@ -1,3 +1,13 @@
+## v3.0.0
+* styte: apply CS fixer
+* build(composer): update composer run scripts
+* build(composer): Add dev-master alias on 3.0.x-dev
+* feat(error): Add Exception classes
+  > 404 errors now throws a `\Emri99\Gitlab\Exception\NotFoundException`
+
+**BC changes:**
+* `\RuntimeException` have been replaced with `\Emri99\Gitlab\Exception\GitlabApiClientException`
+
 ## v2.0.3
 fix: detection of empty response
 fix: remove PHP notice warning on missing Content-Type response header
